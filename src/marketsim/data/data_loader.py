@@ -1,15 +1,42 @@
 """
-Data loading utilities for MarketSim AI
+Data loading utilities for MarketSim AI.
 """
 
+from pathlib import Path
+import pandas as pd
+
 class DataLoader:
-    """ Loads and manages historical market data. """
+    """Loads processed market datasets."""
+
+    def __init__(self) -> None:
+        self.data_dir = Path("data/processed")
+
+    def load_ticker(self, ticker: str) -> pd.DataFrame:
+        """
+        Load a processed ticker dataset.
+        """
+
+        ticker = ticker.upper()
+
+        file_path = self.data_dir / f"{ticker}.csv"
+
+        if not file_path.exists():
+            raise FileNotFoundError(
+                f"No processed dataset found for {ticker}"
+            )
+            
+        return pd.read_csv(
+            file_path,
+            parse_dates = ["Date"],
+        )
     
-    def __init__(self):
-        pass
+    def get_available_tickers(self) -> list[str]:
+        """
+        Return all available processed tickers.
+        """
 
-    def load_ticker(self, ticker: str):
-        pass
-
-    def get_available_tickers(self):
-        pass
+        return sorted(
+            file.stem
+            for file in self.data_dir.glob("*.csv")
+        )
+        
