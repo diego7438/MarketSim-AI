@@ -25,3 +25,37 @@ def test_get_price():
 
     assert isinstance(price, float)
     assert price > 0
+
+def test_step():
+    loader = DataLoader()
+
+    env = MarketEnvironment(
+        data_loader = loader,
+        start_date = "2016-01-04"
+    )
+
+    original_date = env.current_date
+
+    env.step()
+
+    assert env.current_date > original_date
+
+def test_get_history():
+    loader = DataLoader()
+
+    env = MarketEnvironment(
+        data_loader = loader,
+        start_date = "2016",
+    )
+
+    history = env.get_history(
+        "AAPL",
+        lookback_days = 30,
+    )
+
+    assert len(history) <= 30
+
+    assert (
+        history["Date"].max()
+        <= env.current_date
+    )

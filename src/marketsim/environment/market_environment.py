@@ -29,6 +29,20 @@ class MarketEnvironment:
             self._market_data["SPY"]["Date"]
         )
 
+        valid_days = [
+            day for day in self._trading_days
+            if day >= self._current_date
+        ]
+
+        if not valid_days:
+            raise ValueError("Start date beyond the dataset sadly")
+        
+        self._current_date = valid_days[0]
+
+        self._current_step = self._trading_days.index(
+            self._current_date
+        )
+
     @property
     def current_date(self) -> pd.Timestamp:
         """
@@ -36,6 +50,22 @@ class MarketEnvironment:
         """
 
         return self._current_date
+
+    def step(self) -> None:
+        """
+        Advance simulation by one trading day.
+        """
+
+        if self._current_step >= len(self._trading_days) - 1:
+            raise StopIteration(
+                "End of market data reached"
+            )
+        
+        self._current_step += 1
+
+        self._current_date = self._trading_days[
+            self._current_step
+        ]
     
     def get_price(self, ticker: str) -> float:
         """
@@ -54,4 +84,25 @@ class MarketEnvironment:
             )
         
         return float(row.iloc[0]["Close"])
+    
+    def get_history(
+            self,
+            ticker: str,
+            lookback_days: int,
+    ):
+        """
+        Return historical data up to the current date.
+        """
+
+        ticker = ticker.upper()
+
+        df = self._market_data[ticker]
+
+        historical = df[
+            df["Date"] <= self._current_date
+        ]
+
+        return historical.tail(
+            lookback_days
+        ).copy()
     
